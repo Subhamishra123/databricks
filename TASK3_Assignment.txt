@@ -1,0 +1,179 @@
+Restaurant’s Insights using PySpark:
+
+1) The restaurant has sales data which contains customers’ information
+2) We have menu data with food items-related information and members data with subscriptions related information if any customer has purchased it.
+We are going to create three data frames. Which contains the following information
+
+
+a) Sales dataframe:- This dataframe contains information related to sales. It has three columns customer_id, order_date, and product_id.
+
+customer_id:- This column contains the id of the customer. Ex:- A, B, C etc.
+order_date:- This column includes the item’s ordering dates information- ‘2021-01-11’ etc.
+product_id:- This holds the id of the product or food items. Ex:- 1, 2, 3 etc..
+
+
+This article was published as a part of the Data Science Blogathon.
+
+Introduction
+Innovations and new technologies are transforming the world in many facets. The Internet, the web, and smartphones have become a necessity of today’s life. The manual to digital transition in work has already occurred in developed nations. By using modern technologies, developing countries also strive for comprehensive national growth.
+
+Today we have data from sectors like automobile, finance, technologies, aviation, the food industry, media, etc. These data are in different formats and massive in quantity. We need modern tools and technologies to dig out hidden insights from these data.
+
+In this article, we will work on a case study using PySpark and try to find some hidden information from the data to answer some questions. To work on this case study, I am using the Databricks Community Edition.
+
+PySpark
+Source: Databricks
+ 
+
+Overview of Business
+There is a small restaurant that sells some fantastic Indian food items. They need our assistance to help the restaurant stay afloat. The restaurant has captured some data from its few months of operation but has yet to learn how to use its data to help them run the business.
+
+
+Become a Full Stack Data Scientist
+Transform into an expert and significantly impact the world of data science.
+PySpark
+Source: Canva
+Now we want to use the data to answer a few questions about his customers, especially their visiting patterns, the money they’ve spent, and which menu items are the customer’s favorite.
+
+DataFrame Creation | PySpark, and Databricks
+The restaurant has sales data which contains customers’ information. We have menu data with food items-related information and members data with subscriptions related information if any customer has purchased it.
+
+
+Source: Databricks
+We are going to create three data frames. Which contains the following information:-
+
+1. Sales dataframe:- This dataframe contains information related to sales. It has three columns customer_id, order_date, and product_id.
+
+customer_id:- This column contains the id of the customer. Ex:- A, B, C etc.
+order_date:- This column includes the item’s ordering dates information- ‘2021-01-11’ etc.
+product_id:- This holds the id of the product or food items. Ex:- 1, 2, 3 etc.
+# create sales data
+sales_data = [
+          ('A', '2021-01-01', '1'),
+          ('A', '2021-01-01', '2'),
+          ('A', '2021-01-07', '2'),
+          ('A', '2021-01-10', '3'),
+          ('A', '2021-01-11', '3'),
+          ('A', '2021-01-11', '3'),
+          ('B', '2021-01-01', '2'),
+          ('B', '2021-01-02', '2'),
+          ('B', '2021-01-04', '1'),
+          ('B', '2021-01-11', '1'),
+          ('B', '2021-01-16', '3'),
+          ('B', '2021-02-01', '3'),
+          ('C', '2021-01-01', '3'),
+          ('C', '2021-01-01', '1'),
+          ('C', '2021-01-07', '3')]
+
+
+# cols
+sales_cols= ["customer_id", "order_date", "product_id"]
+sales_df = spark.createDataFrame(data = sales_data, schema = sales_cols)
+# view the data
+sales_df.show()
+
+
+The Sales dataframe will look like this:-
+
++-----------+----------+----------+
+|customer_id|order_date|product_id|
++-----------+----------+----------+
+|          A|2021-01-01|         1|
+|          A|2021-01-01|         2|
+|          A|2021-01-07|         2|
+|          A|2021-01-10|         3|
+|          A|2021-01-11|         3|
+|          A|2021-01-11|         3|
+|          B|2021-01-01|         2|
+|          B|2021-01-02|         2|
+|          B|2021-01-04|         1|
+|          B|2021-01-11|         1|
+|          B|2021-01-16|         3|
+|          B|2021-02-01|         3|
+|          C|2021-01-01|         3|
+|          C|2021-01-01|         1|
+|          C|2021-01-07|         3|
++-----------+----------+----------+
+
+
+
+2. Menu dataframe:- This dataframe contains food items-related information. It has three columns’ product_id’, ‘product_name’, and ‘price.’
+
+product_id:- This column has the id of food items. Ex:- 1, 2, 3 etc.
+product_name:- Name of food items stored in this column.
+price:- The cost of food items will be in this column.
+# menu data
+menu_data = [ ('1', 'palak_paneer', 100),
+              ('2', 'chicken_tikka', 150),
+              ('3', 'jeera_rice', 120),
+              ('4', 'kheer', 110),
+              ('5', 'vada_pav', 80),
+              ('6', 'paneer_tikka', 180)]
+# cols
+menu_cols = ['product_id', 'product_name', 'price']
+# create the menu dataframe
+menu_df = spark.createDataFrame(data = menu_data, schema = menu_cols)
+# view the data
+menu_df.show()
+The Menu dataframe will look like this:-
+
++----------+-------------+-----+
+|product_id| product_name|price|
++----------+-------------+-----+
+|         1| palak_paneer|  100|
+|         2|chicken_tikka|  150|
+|         3|   jeera_rice|  120|
+|         4|        kheer|  110|
+|         5|     vada_pav|   80|
+|         6| paneer_tikka|  180|
++----------+-------------+-----+
+3. Members dataframe:- This dataframe has details of those customers who hold any membership from this restaurant. The columns in this dataframe are- customer_id and join_date. The join_date column has the membership purchase date.
+
+# create member data
+members_data = [ ('A', '2021-01-07'),
+                 ('B', '2021-01-09')]
+# cols
+members_cols = ["customer_id", "join_date"]
+# create the member's dataframe
+members_df = spark.createDataFrame(data = members_data, schema = members_cols)
+# view the data
+members_df.show()
+The member’s dataframe will look like this:-
+
++-----------+----------+
+|customer_id| join_date|
++-----------+----------+
+|          A|2021-01-07|
+|          B|2021-01-09|
++-----------+----------+
+
+
+
+
+NOW HERE ARE THE TASKS : 
+
+1) What is the total amount each customer spent at the restaurant?
+
+2) How many days has each customer visited the restaurant?
+
+3) What was each customer’s first item from the menu?
+
+4) Find out the most purchased item from the menu and how many times the customers purchased it.
+
+5) Which item was the most popular for each customer?
+
+6) Which item was ordered first by the customer after becoming a restaurant member?
+
+7) Which item was purchased before the customer became a member?
+
+8) What is the total items and amount spent for each member before they became a member?
+
+9) If each rupee spent equates to 10 points and item ‘jeera_rice’ has a 2x points multiplier, find out how many points each customer would have.
+
+
+10) Create the complete table with all data and columns like customer_id, order_date, product_name, price, and member(Y/N).
+
+
+11) We also require further information about the ranking of customer products. The owner does not need the ranking for non-member purchases, so he expects null ranking values for the records when customers still need to be part of the membership program.
+
+

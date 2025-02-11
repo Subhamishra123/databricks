@@ -1,0 +1,270 @@
+Question 1 Key : 
+# code
+orders_df.count()
+# output:-
+68882
+
+Question 2: KEY 
+avg_revenue = orders_df.join(order_items_df, col("order_id") == col("order_item_order_id"))
+
+.select('order_item_subtotal', 'order_item_order_id')
+
+.select((sum('order_item_subtotal') / countDistinct('order_item_order_id')).alias('avg_rev_per_order'))
+
+avg_revenue.show()
+
+# output:-
++-----------------+
+|avg_rev_per_order|
++-----------------+
+|597.6374824728177|
++-----------------+
+
+
+Question 3 : Key 
+
+Find the average revenue per day
+
+avg_rev_per_day = orders_df.join(order_items_df, col("order_id") == col("order_item_order_id")) 
+                  .select('order_date', 'order_item_subtotal', 'order_item_order_id') 
+                  .groupBy('order_date') 
+                  .agg((sum('order_item_subtotal') / countDistinct('order_item_order_id')).alias('avg_rev_per_day')) 
+                  .orderBy('order_date')
+avg_rev_per_day.show(10)
+# output:-
++--------------------+-----------------+
+|          order_date|  avg_rev_per_day|
++--------------------+-----------------+
+|2013-07-25 00:00:...|590.0334897082785|
+|2013-07-26 00:00:...|585.9234878147109|
+|2013-07-27 00:00:...|577.5676682063512|
+|2013-07-28 00:00:...|551.4119109020958|
+|2013-07-29 00:00:...|635.5883909684641|
+|2013-07-30 00:00:...|564.5363838698838|
+|2013-07-31 00:00:...|630.9955146643533|
+|2013-08-01 00:00:...|608.4982189502356|
+|2013-08-02 00:00:...|587.8871075517388|
+|2013-08-03 00:00:...|599.1628419048382|
++--------------------+-----------------+
+
+
+Question 4 : 
+
+Find the average revenue per month.
+# solution
+avg_revenue_per_month = orders_df.join(order_items_df, col("order_id") == col("order_item_order_id")) \
+
+                      .select('order_date', 'order_item_subtotal', 'order_item_order_id') \
+
+                      .withColumn("date", to_date(col("order_date").cast("timestamp"))) \
+
+                      .withColumn("month", month(col("date")))\
+
+                      .withColumn("year", year(col("date")))\
+
+                      .groupBy('month', 'year') \
+
+                      .agg(avg('order_item_subtotal').alias('avg_rev_per_month')) \
+
+                      .orderBy('month')
+
+
+# output
+
++-----+----+------------------+
+
+|month|year| avg_rev_per_month|
+
++-----+----+------------------+
+
+|    1|2014| 199.4031819907084|
+
+|    2|2014|197.99513431082633|
+
+|    3|2014| 199.4768129569396|
+
+|    4|2014|197.84314083932082|
+
+|    5|2014|200.16564445417947|
+
+|    6|2014|203.19154387871515|
+
+|    7|2013|200.12623683619873|
+
+|    7|2014|198.73016375184736|
+
+|    8|2013|198.25194523225554|
+
+|    9|2013|199.70922326100543|
+
+|   10|2013|198.59266499428136|
+
+|   11|2013| 199.2238976529843|
+
+|   12|2013| 199.1285441948526|
+
+
+
+Question 5 : Key 
+
+Which departments have the best performance?
+# solution
+top_perform_dept = orders_df.filter((col("order_status") != 'CANCELED') & (col("order_status") != 'SUSPECTED_FRAUD')) 
+      .join(order_items_df, col("order_id") == col("order_item_order_id"), how='inner') 
+      .join(products_df, col("order_item_product_id") == col("product_id"), how='inner') 
+      .join(categories_df, col("product_category_id") == col("category_id"), how='inner') 
+      .join(departments_df, col("category_department_id") == col("department_id"), how='inner') 
+      .select('department_name', year(col("order_date")).alias('order_year'), 'order_item_subtotal') 
+      .groupBy(col("department_name"), 'order_year') 
+      .agg(sum(col("order_item_subtotal")).alias('total_revenue')) 
+      .orderBy('department_name', 'order_year')
+# output
++---------------+----------+------------------+
+|department_name|order_year|     total_revenue|
++---------------+----------+------------------+
+|        Apparel|      2013|3090985.6535224915|
+|        Apparel|      2014| 3917585.841217041|
+|       Fan Shop|      2013| 7290531.899988174|
+|       Fan Shop|      2014|  9095735.77280426|
+|       Footwear|      2013|1711492.5186824799|
+|       Footwear|      2014| 2122339.649032593|
+|           Golf|      2013| 1967396.959728241|
+|           Golf|      2014|2440585.2815055847|
+|       Outdoors|      2013| 420317.9507675171|
+|       Outdoors|      2014| 532437.6709976196|
++---------------+----------+------------------+
+
+
+Question 6: Key
+What is the most expensive item in the catalog?
+# solutions
+max_pt = products_df.select(max('product_price')).collect()[0][0]
+most_expns_product_df = products_df.select('product_id', 'product_category_id', 'product_name', 'product_price')
+                                   .filter(col('product_price') == max_pt)
+most_expns_product_df.show()
+# output
++----------+-------------------+-------------------+-------------+
+|product_id|product_category_id|       product_name|product_price|
++----------+-------------------+-------------------+-------------+
+|       208|                 10|SOLE E35 Elliptical|      1999.99|
++----------+-------------------+-------------------+-------------+
+
+Question 07: Which products have generated the most revenue?
+# solution
+highest_grossing_item = order_items_df.select('order_item_product_id', 'order_item_subtotal')
+     .groupBy('order_item_product_id')
+     .agg(F.sum('order_item_subtotal').alias('product_revenue'))
+     .orderBy('product_revenue', ascending=False)
+     .limit(1)
+     .join(products_df, col("order_item_product_id") == col("product_id"), how='inner')
+     .select('product_id', 'product_category_id', 'product_name', 'product_revenue')
+     .show(truncate=False)
+# output
++----------+-------------------+-----------------------------------------+-----------------+
+|product_id|product_category_id|product_name                             |product_revenue  |
++----------+-------------------+-----------------------------------------+-----------------+
+|1004      |45                 |Field & Stream Sportsman 16 Gun Fire Safe|6929653.690338135
+
+
+
+Question 08: What are the top-ordered categories in the retail data?
+# solution
+popular_category_df = order_items_df.join(products_df, 
+                                 col("order_item_product_id") ==  col("product_id"), how='inner') 
+                 .join(categories_df, col("category_id") == col("product_category_id"), how='inner') 
+                 .groupBy('category_name') 
+                 .agg(F.sum('order_item_quantity').alias('order_count')) 
+                 .orderBy('order_count', ascending=False) 
+                 .limit(10)
+popular_category_df.show()
+# output
++--------------------+-----------+
+|       category_name|order_count|
++--------------------+-----------+
+|              Cleats|      73734|
+|     Women's Apparel|      62956|
+|Indoor/Outdoor Games|      57803|
+|    Cardio Equipment|      37587|
+|       Shop By Sport|      32726|
+|      Men's Footwear|      22246|
+|             Fishing|      17325|
+|        Water Sports|      15540|
+|    Camping & Hiking|      13728|
+|         Electronics|       9436|
+
+ 
+
+Question 09: Find the count of orders based on their status.
+# solution
+orders_by_status = orders_df.groupBy(col("order_status")) 
+                .agg(count(col("order_status")).alias("total_status"))
+orders_by_status.show()
+# output
++---------------+------------+
+|   order_status|total_status|
++---------------+------------+
+|PENDING_PAYMENT|       15030|
+|       COMPLETE|       22899|
+|        ON_HOLD|        3798|
+| PAYMENT_REVIEW|         729|
+|     PROCESSING|        8275|
+|         CLOSED|        7555|
+|SUSPECTED_FRAUD|        1558|
+|        PENDING|        7610|
+|       CANCELED|        1428|
++---------------+------------+
+
+
+Question 10: Find all orders whose status is CANCELED, and the order amount is more than $1000.
+# solution
+cancelled_orders = orders_df.filter(col('order_status') == 'CANCELED') 
+                 .join(order_items_df, col("order_id") == col("order_item_order_id")) 
+                 .groupBy("order_id", "order_date", "order_customer_id", "order_status") 
+                 .agg(sum('order_item_subtotal').alias('order_total')) 
+                 .filter(col('order_total') >= 1000) 
+                 .orderBy('order_id')
+cancelled_orders.show(10)
+# output
++--------+--------------------+-----------------+------------+------------------+
+|order_id|          order_date|order_customer_id|order_status|       order_total|
++--------+--------------------+-----------------+------------+------------------+
+|     753|2013-07-29 00:00:...|             5094|    CANCELED|           1129.75|
+|    2012|2013-08-04 00:00:...|             5165|    CANCELED|1499.8600311279297|
+|    2144|2013-08-05 00:00:...|             7932|    CANCELED| 1099.900032043457|
+|    2189|2013-08-06 00:00:...|             6829|    CANCELED|1029.9400253295898|
+|    2271|2013-08-06 00:00:...|             7603|    CANCELED|1229.9300231933594|
+|    2754|2013-08-09 00:00:...|             8946|    CANCELED|1109.9500274658203|
+|    3551|2013-08-14 00:00:...|             5363|    CANCELED|1299.8700408935547|
+|    4354|2013-08-20 00:00:...|             7268|    CANCELED|1047.9000244140625|
+|    4801|2013-08-23 00:00:...|            11630|    CANCELED|1016.9500217437744|
+|    5331|2013-08-26 00:00:...|             3361|    CANCELED|1229.8100204467773|
++--------+--------------------+-----------------+------------+------------------+
+
+
+
+Question 11: Find all customers who made more than five orders in August 2013.
+# solution
+order_more_than_five = orders_df.filter((col('order_status') != 'CANCELED') & (col('order_status') != 'SUSPECTED_FRAUD')) 
+                      .filter((F.year('order_date') == 2013) & (F.month('order_date') == 8)) 
+                      .join(order_items_df, col("order_id") == col("order_item_order_id"), how='inner') 
+                      .join(customers_df, col("order_customer_id") == col("customer_id"), how='inner') 
+                      .select('customer_id', 'customer_fname', 'customer_lname', 'order_id') 
+                      .groupBy('customer_id', 'customer_fname', 'customer_lname') 
+                      .agg(count('order_id').alias('order_count')) 
+                      .where(col('order_count') > 5) 
+                      .orderBy(col('order_count'), col('customer_id'), ascending=[0, 1])
+# output
++-----------+--------------+--------------+-----------+
+|customer_id|customer_fname|customer_lname|order_count|
++-----------+--------------+--------------+-----------+
+|        791|          Mary|         Smith|         15|
+|       5047|       Shirley|     Whitehead|         14|
+|       5477|          Mary|         Smith|         14|
+|       6088|          Mary|        Brooks|         14|
+|       9371|          Mary|     Patterson|         14|
+|       3295|         Maria|        Joseph|         13|
+|       3536|          Mary|        Tanner|         13|
+|       4582|         Brian|         House|         13|
+|       5865|         David|     Middleton|         13|
+|       8069|       Tiffany|      Mcdaniel|         13|
++-----------+--------------+--------------+-----------+

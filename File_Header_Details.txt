@@ -1,0 +1,45 @@
+FOr categories data set --> 
+customers.csv--> 
+
+customer_id: This column contains the id of the customer. Ex:- 1, 2, 3, etc.
+customer_fname: This column has the customer’s first name details.
+customer_lname: This column has the customer’s last name details.
+customer_email: This column includes the customer’s email info.
+customer_password: This column has customer password information. It’s encrypted.
+customer_street: This has customer address-related info, which is street in this case.
+customer_city: This has city-related information.
+customer_state: The state info of the customer.
+customer_zipcode: The zip code of the customer location.
+
+products.csv 
+
+use below header 
+product_id: This column contains the product ids.
+product_category_id: This column help in finding the category of the product.
+product_name:- This column includes product names that we have in store.
+product_description: It consists of the product details.
+product_price: The product price is in this column.
+product_image: Product image URLs are present in this column.
+
+categories.csv
+It has three columns product_id, product_category_id, and category_name.
+
+Orders.csv
+order_id: It has the Ids of the ordered item.
+order_date: The date and time values are included in this column.
+order_customer_id: The customer order Ids is contained in this column.
+order_status: The payment status details are in this column.
+
+
+departments.csv
+department_id: It has the ID’s information.
+department_name: It has a list of department names
+
+Order_items.csv
+
+“order_item_id“: This column contains a unique identifier for each order item.
+“order_item_order_id“: This column contains the unique identifier of the order that the ordered item belongs.
+“order_item_product_id”: The unique identifier of the ordered products is stored in this column.
+“order_item_quantity”: The ordered product quantity is recorded in this column.
+“order_item_subtotal“: This column contains the total cost of the ordered item, calculated by multiplying the quantity by the product price.
+“order_item_product_price“: The cost of each product is recorded in this column.

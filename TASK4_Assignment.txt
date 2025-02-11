@@ -1,0 +1,40 @@
+Analyzing Employee Performance
+
+Consider two tables, employees and performance_logs, 
+which store information about employees and their performance records, 
+respectively.
+
+Table 1: employees
+
++---+-------+--------+
+| id|  name| role |
++---+-------+--------+
+| 1| Arun|Developer|
+| 2|  Bharath | Manager|
+| 3|Thulasi|Developer|
+| 4| David| Manager|
++---+-------+---------+
+
+Table 2: performance_logs
+
++--------+-------+-----------+
+|log_date |emp_id |performance|
++--------+-------+-----------+
+|2023-01-01|   1 |    8.5|
+|2023-01-01|   2 |    7.2|
+|2023-01-01|   3 |    9.0|
+|2023-01-02|   1 |    8.0|
+|2023-01-02|   2 |    7.5|
+|2023-01-02|   3 |    8.8|
++--------+-------+-----------+
+
+1) Write a pyspark code to find the count of employees for each role.
+
+2) Calculate the average performance of each employee across all dates.
+
+3) dentify the top-performing employee for each role based on the maximum performance score. 
+In case of ties, prioritize the smaller employee ID.
+
+4) Determine the role with the highest average performance across all employees.
+
+

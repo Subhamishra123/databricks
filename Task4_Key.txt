@@ -1,0 +1,19 @@
+SOlution 1 :
+employeeCountByRole = employeesDF.groupBy("role").agg(count("*").alias("role_count"))
+
+
+Solution 2: 
+avgPerformanceByEmployee = performanceLogsDF.groupBy("emp_id").agg(avg("performance").alias("avg_performance"))
+
+
+Solution 3: 
+joinedDF = performanceLogsDF.join(employeesDF, performanceLogsDF("emp_id") === employeesDF("id"))
+windowSpec = Window.partitionBy("role").orderBy(col("performance").desc,col("emp_id").asc)
+
+topPerformingEmployeesDF = joinedDF.withColumn("rank", rank().over(windowSpec)).filter("rank == 1")
+
+
+Solution 4: 
+roleAvgPerformance = performanceLogsDF.join(employeesDF, performanceLogsDF("emp_id") === employeesDF("id")).groupBy("role").agg(avg("performance").alias("avg_performance"))
+
+roleWithHighestAvgPerformance = roleAvgPerformance.orderBy(col("avg_performance").desc).limit(1)

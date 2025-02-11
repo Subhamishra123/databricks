@@ -1,0 +1,195 @@
+Question 01:- What is the total amount each customer spent at the restaurant?
+# solution:-
+total_spent_df = (sales_df.join(menu_df, 'product_id') 
+                         .groupBy('customer_id').agg({'price':'sum'}) 
+                         .withColumnRenamed('sum(price)', 'total_spent_amounts') 
+                         .orderBy('customer_id'))
+# output:-
++-----------+-------------------+
+|customer_id|total_spent_amounts|
++-----------+-------------------+
+|          A|                760|
+|          B|                740|
+|          C|                340|
++-----------+-------------------+ 
+
+
+Question 02:- How many days has each customer visited the restaurant?
+# solution:-
+res_visit_df = sales_df.groupBy('customer_id').agg(countDistinct('order_date')) 
+                                     .withColumnRenamed('count(order_date)', 'visit_days')
+# output:-
++-----------+----------+
+|customer_id|visit_days|
++-----------+----------+
+|          A|         4|
+|          B|         6|
+|          C|         2|
++-----------+----------+
+
+Question 03:- What was each customer’s first item from the menu?
+# create windowspec
+windowSpec  = Window.partitionBy("customer_id").orderBy("order_date")
+items_purchased_df = sales_df.withColumn("dense_rank", dense_rank().over(windowSpec)) 
+                          .filter("dense_rank == 1") 
+                          .join(menu_df, 'product_id') 
+                          .select('customer_id', 'product_name') 
+                          .orderBy('customer_id')
+# output:-
++-----------+-------------+
+|customer_id| product_name|
++-----------+-------------+
+|          A|chicken_tikka|
+|          A| palak_paneer|
+|          B|chicken_tikka|
+|          C| palak_paneer|
+|          C|   jeera_rice|
+
+
+Question 04:- Find out the most purchased item from the menu and how many times the customers purchased it.
+# code
+most_purchased_df = sales_df.join(menu_df, 'product_id') 
+                            .groupBy('product_id', 'product_name') 
+                            .agg(count('product_id').alias('product_count')) 
+                            .orderBy('product_count', ascending=0) 
+                            .drop('product_id') 
+                            .limit(1)
+# output:-
++------------+-------------+
+|product_name|product_count|
++------------+-------------+
+|  jeera_rice|            7|
++------------+-------------+
+
+
+Question 05:- Which item was the most popular for each customer?
+# code:-
+popular_item_df = sales_df.join(menu_df, 'product_id') 
+                .groupBy('customer_id', 'product_name')
+                .agg(count('product_id').alias('count_orders'))
+                .withColumn('dense_rank', dense_rank().over(Window.partitionBy("customer_id")
+                                                    .orderBy(col("count_orders").desc())))
+                .filter('dense_rank=1')
+                .drop('dense_rank')
+# output:-
++-----------+-------------+------------+
+|customer_id| product_name|count_orders|
++-----------+-------------+------------+
+|          A|   jeera_rice|           3|
+|          B|chicken_tikka|           2|
+|          B| palak_paneer|           2|
+|          B|   jeera_rice|           2|
+|          C|   jeera_rice|           2|
++-----------+-------------+------------+
+
+
+Question 06:- Which item was ordered first by the customer after becoming a restaurant member?
+# code:-
+windowSpec = Window.partitionBy("customer_id").orderBy("order_date")
+items_after_member_df = sales_df.join(members_df, 'customer_id') 
+                                .filter(sales_df.order_date >= members_df.join_date) 
+                                .withColumn('dense_rank', dense_rank().over(windowSpec)) 
+                                .filter('dense_rank = 1') 
+                                .join(menu_df,'product_id') 
+                                .select('customer_id', 'order_date', 'product_name')
+# output:-
++-----------+----------+-------------+
+|customer_id|order_date| product_name|
++-----------+----------+-------------+
+|          B|2021-01-11| palak_paneer|
+|          A|2021-01-07|chicken_tikka|
+
+
+Question 07:- Which item was purchased before the customer became a member?
+# code:-
+windowSpec = Window.partitionBy("customer_id").orderBy(col("order_date").desc())
+items_before_member_df = sales_df.join(members_df, 'customer_id') 
+                                .filter(sales_df.order_date < members_df.join_date) 
+                                .withColumn('dense_rank', dense_rank().over(windowSpec)) 
+                                .filter('dense_rank = 1') 
+                                .join(menu_df,'product_id') 
+                                .select('customer_id', 'order_date', 'product_name')
+# output:-
++-----------+----------+-------------+
+|customer_id|order_date| product_name|
++-----------+----------+-------------+
+|          B|2021-01-04| palak_paneer|
+|          A|2021-01-01| palak_paneer|
+|          A|2021-01-01|chicken_tikka|
++-----------+----------+-------------+
+
+Question 08:- What is the total items and amount spent for each member before they became a member?
+# code:-
+total_items_spent_df = sales_df.join(menu_df, 'product_id')
+                               .join(members_df, 'customer_id') 
+                               .filter(sales_df.order_date < members_df.join_date) 
+                               .groupBy('customer_id') 
+                               .agg(countDistinct('product_id').alias('item_counts'), 
+                                sum('price').alias('total_amount'))
+# output:-
++-----------+-----------+------------+
+|customer_id|item_counts|total_amount|
++-----------+-----------+------------+
+|          A|          2|         250|
+|          B|          2|         400|
++-----------+-----------+------------+
+
+Question 09:- If each rupee spent equates to 10 points and item ‘jeera_rice’ has a 2x points multiplier, find out how many points each customer would have.
+# code:-
+earned_points_df = sales_df.join(menu_df, 'product_id')
+                         .withColumn('points', when(col('product_id') == 3, col('price')*20)
+                                     .otherwise(col('price')*10)) 
+                         .groupBy('customer_id') 
+                         .agg(sum('points').alias('rewards_points'))
+# output:-
++-----------+--------------+
+|customer_id|rewards_points|
++-----------+--------------+
+|          B|          9800|
+|          C|          5800|
+|          A|         11200|
++-----------+--------------+
+
+Question 10:- Create the complete table with all data and columns like customer_id, order_date, product_name, price, and member(Y/N).
+# code:-
+all_data_df = sales_df.join(menu_df, 'product_id', 'left')
+                      .join(members_df, 'customer_id', 'left') 
+                      .withColumn('member', when(col('order_date') < col('join_date'), 'N') 
+                                             .when(col('order_date')>= col('join_date'), 'Y')
+                                             .otherwise('N'))
+                       .drop('product_id', 'product_name', 'join_date')
+# output:-
++-----------+----------+-------------+-----+------+
+|customer_id|order_date| product_name|price|member|
++-----------+----------+-------------+-----+------+
+|          A|2021-01-01| palak_paneer|  100|     N|
+|          A|2021-01-01|chicken_tikka|  150|     N|
+|          A|2021-01-07|chicken_tikka|  150|     Y|
+|          A|2021-01-10|   jeera_rice|  120|     Y|
+|          A|2021-01-11|   jeera_rice|  120|     Y|
+|          A|2021-01-11|   jeera_rice|  120|     Y|
+|          B|2021-01-04| palak_paneer|  100|     N|
+|          B|2021-01-11| palak_paneer|  100|     Y|
+|          B|2021-01-01|chicken_tikka|  150|     N|
+|          B|2021-01-02|chicken_tikka|  150|     N|
+|          B|2021-01-16|   jeera_rice|  120|     Y|
+|          B|2021-02-01|   jeera_rice|  120|     Y|
+|          C|2021-01-01| palak_paneer|  100|     N|
+|          C|2021-01-01|   jeera_rice|  120|     N|
+|          C|2021-01-07|   jeera_rice|  120|     N|
+
+
+
+
+Question 11:- We also require further information about the ranking of customer products. The owner does not need the ranking for non-member purchases, so he expects null ranking values for the records when customers still need to be part of the membership program.
+# code:-
+ranking_final_df = sales_df.join(menu_df, 'product_id', 'left')
+                      .join(members_df, 'customer_id', 'left') 
+                      .withColumn('is_member', when(col('order_date') < col('join_date'), 'N') 
+                                               .when(col('order_date')>= col('join_date'), 'Y')
+                                               .otherwise('N'))
+                      .withColumn('rank', when(col('is_member') == 'N', None) 
+                                          .when(col('is_member') == 'Y', rank().over(Window.partitionBy('customer_id','is_member')
+                                                .orderBy('order_date'))) 
+                                           .otherwise(0))
+
