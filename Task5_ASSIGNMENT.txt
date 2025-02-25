@@ -1,0 +1,89 @@
+1)  Calculate the average salary and count of employees for each department.
+
+Sample Data :
+
+data = [
+ (Sales, 5000, John),
+ (Sales, 6000, Doe),
+ (HR, 7000, Jane),
+ (HR, 8000, Alice),
+ (IT, 4500, Bob),
+ (IT, 5500, Charlie),
+]
+
+Schema : department, salary, employee_name
+
+
+Create a dataframe and calculate the average salary and count of employee for each department 
+
+2) 
+
+Write a PySpark code to remove duplicate rows based on specific columns.
+
+data = [ (1, "Alice", 2000), (2, "Bob", 3000), 
+ (3, "Alice", 2000), (4, "David", 4000), 
+ (5, "Alice", 5000), (6, "Bob", 3000) ] 
+
+columns = ["ID", "Name", "Salary"] 
+
+Create a dataframe and remove the duplicate rows based on specific columns 
+
+3) Given a DataFrame df with columns id, name, and salary,
+ write a PySpark code to filter rows where salary is greater than 5000 and select only the name column.
+
+data = [
+(1,"Amar",4000),
+(2,"Bhaskar",6000),
+(3,"Charlie",5500),
+(4,"David",4500),
+(5,"Even",7000)
+]
+
+Schema : id,name,salary 
+
+
+4) How would you handle null values in a DataFrame? For example, drop rows with null values in the age column. 
+
+data = [("Alice", 30), 
+    ("Bob", None), 
+    ("Catherine", 25), 
+    (None, 35), 
+    ("Eve", None)]
+
+columns = ["Name", "Age"]
+
+
+5) You are given two DataFrames in PySpark:
+employee_df: Contains employee information.
+department_df: Contains department information.
+You need to perform an inner join on these DataFrames to find out which department each employee belongs to.
+
+Below is the emp_df 
+emp_id   name   dept_id
+1       Amar     101
+2       Bhaskar  102
+3       Carlo    103
+4       Dave     101
+5       Eve      104
+
+
+Below is the dept_df 
+dept_id   dept_name
+101       HR 
+102       Engineering 
+103       Marketing
+105       Sales 
+
+
+Expected OP : 
+Emp_id    name    Dept_name 
+1         Amar    HR
+2         Bhaskar Engineering 
+3         Carlo   Marketing
+4         Dave    HR
+
+
+
+
+
+

@@ -1,0 +1,33 @@
+You are working as a Data Engineer for an e-commerce company. The company has two datasets:
+Orders Dataset: Contains order details such as order_id, customer_id, and order_status.
+Customers Dataset: Contains information about customers like customer_id, customer_name, and customer_city.
+Your task is to generate a report that contains all customer information, even if they have not placed any orders. Use a right join to solve this problem, so that we get all customers, including those without orders.
+
+Sample Data:
+Orders Dataset (orders_df):
++---------+------------+-------------+
+| order_id| customer_id| order_status|
++---------+------------+-------------+
+| 1    | 101     | Delivered   |
+| 2     | 102     | Pending    |
+| 3     | 103     | Shipped    |
+| 4     | 101     | Cancelled   |
++----------+-----------+-------------+
+Customers Dataset (customers_df):
++------------+----------------+----------------+
+| customer_id| customer_name| customer_city|
++------------+---------------+-----------------+
+| 101     | Alice     | New York    |
+| 102     | Bob  | Los Angeles  |
+| 103     | Charlie    | Chicago    |
+| 104     | David     | Houston    |
++------------+--------------+------------------+
+
+EXPECTED_OP : 
+
+customer_id  order_id  order_status    customer_name     customer_city 
+101	      1        Delivered	Alice		New York
+101	      4		Cancelled	Alice		New York
+102	      2		Pending		Bob		Los Angeles
+103	      3		Shipped		Charlie		Chicago
+104           Null	Null		David		Houston
